@@ -36,6 +36,40 @@ button.on{border-color:var(--tx)}
 summary{font-weight:600;cursor:pointer}
 .tag{display:inline-block;font-size:11px;padding:2px 6px;border-radius:6px;color:#fff;margin-left:4px}
 </style>
+<style>
+body{background:linear-gradient(180deg,rgba(37,99,235,.16),transparent 300px),var(--bg);-webkit-tap-highlight-color:transparent;padding-bottom:48px}
+body>.nav{padding:6px 2px 14px}
+body>.nav h1{font-size:26px;font-weight:800;letter-spacing:-.4px}
+.card{border-radius:20px;padding:16px;box-shadow:0 8px 24px rgba(15,23,42,.08);border:1px solid var(--bd)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .card{box-shadow:0 8px 24px rgba(0,0,0,.35)}}
+:root[data-theme="dark"] .card{box-shadow:0 8px 24px rgba(0,0,0,.35)}
+label{font-size:12px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--mu)}
+input,textarea{border-radius:14px;border:1.5px solid var(--bd);padding:13px;font-weight:600;transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 4px rgba(37,99,235,.18)}
+button{border-radius:14px;transition:transform .1s,box-shadow .15s}
+button:active{transform:scale(.96)}
+.w,.r,.d,.s,.p,.x2{box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.w{background:linear-gradient(135deg,#22c55e,#15803d)}
+.r{background:linear-gradient(135deg,#22d3ee,#0e7490)}
+.d{background:linear-gradient(135deg,#fbbf24,#b45309)}
+.s{background:linear-gradient(135deg,#a78bfa,#6d28d9)}
+.p{background:linear-gradient(135deg,#60a5fa,#1d4ed8)}
+.x2{background:linear-gradient(135deg,#f87171,#b91c1c)}
+button.on{border-color:transparent;box-shadow:0 0 0 3px var(--card),0 0 0 6px var(--tx)}
+.nav button{box-shadow:none;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:12px}
+.x{box-shadow:none;background:none}
+.cur{background:var(--bg);border-radius:12px;padding:10px 12px;margin-top:12px}
+#mt{font-size:21px;font-weight:800;text-transform:capitalize}
+.grid{gap:10px;margin-top:14px}
+.grid div{border-radius:16px;padding:13px;font-size:21px;font-weight:800}
+.grid small{font-size:12px;font-weight:500;color:var(--mu);margin-bottom:3px}
+.grid div:nth-child(3){grid-column:1/-1;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:30px}
+.grid div:nth-child(3) small{color:rgba(255,255,255,.8)}
+.li{padding:11px 0;font-size:15px}
+.tag{border-radius:999px;padding:3px 10px;font-weight:600}
+summary{font-size:16px;padding:4px 0}
+.hint{line-height:1.45}
+</style>
 </head>
 <body>
 <div class="nav"><h1 style="margin:4px 0">📅 Мой график</h1><button onclick="toggleTheme()" style="width:auto;padding:8px 14px;background:var(--card);color:var(--tx);border:1px solid var(--bd)">☀️ / 🌙</button></div>
@@ -100,6 +134,12 @@ summary{font-weight:600;cursor:pointer}
     <div class="g2" style="grid-template-columns:1fr"><button class="p" onclick="saveSettings(this)">✔ Сохранить настройки</button></div>
   </details>
 </div>
+<div class="card">
+  <label>💾 Резервная копия (для нового телефона)</label>
+  <textarea id="bk" placeholder="Здесь появится текст копии. Для загрузки вставь сюда текст копии." style="width:100%;min-height:90px;font-size:13px;padding:8px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)"></textarea>
+  <div class="g2"><button class="p" onclick="makeBackup()">📋 Сохранить копию</button><button class="w" onclick="loadBackup()">⬇ Загрузить копию</button></div>
+  <div class="hint" id="bkmsg"></div>
+</div>
 <div class="hint">Данные хранятся в этом телефоне, в этом браузере.</div>
 
 <script>
@@ -134,6 +174,30 @@ function saveSettings(b){['work','duty','short'].forEach(k=>{db.set[k]=num($('se
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t);}
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const n=c==='dark'?'light':'dark';applyTheme(n);try{localStorage.setItem('theme.v1',n);}catch(e){}}
 try{const t=localStorage.getItem('theme.v1');if(t)applyTheme(t);}catch(e){}
+function makeBackup(){
+  const t=JSON.stringify({v:2,days:db.days,pay:db.pay,set:db.set});
+  $('bk').value=t;
+  let ok=false;
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t);ok=true;}}catch(e){}
+  $('bkmsg').textContent=ok?'Копия скопирована. Вставь её в заметку или отправь себе в Телеграм.':'Нажми на текст выше, выбери «Выбрать всё» и «Копировать».';
+}
+function loadBackup(){
+  let o;
+  try{o=JSON.parse($('bk').value.trim());}catch(e){$('bkmsg').textContent='Не получилось прочитать. Вставь копию целиком.';return;}
+  if(!o||typeof o.days!=='object'){$('bkmsg').textContent='Это не копия графика.';return;}
+  let nd=0,np=0;
+  Object.keys(o.days).forEach(k=>{const x=o.days[k];if(x&&typeof x==='object'&&N[x.s]){db.days[k]={s:x.s,h:Number(x.h)||0};nd++;}});
+  (o.pay||[]).forEach(p=>{
+    if(!p||!p.d||!(Number(p.a)>0))return;
+    const m=p.m||String(p.d).slice(0,7),a=Number(p.a);
+    if(!db.pay.some(q=>q.d===p.d&&(q.m||q.d.slice(0,7))===m&&q.a===a)){db.pay.push({d:p.d,m:m,a:a});np++;}
+  });
+  if(o.set&&typeof o.set==='object'){['work','duty','short','rate'].forEach(k=>{if(o.set[k]!==undefined)db.set[k]=Number(o.set[k])||0;});}
+  save();
+  ['work','duty','short'].forEach(k=>{$('set_'+k).value=db.set[k];});$('set_rate').value=db.set.rate||'';
+  render();
+  $('bkmsg').textContent='Загружено: дней '+nd+', выплат добавлено '+np+' ✓';
+}
 function mv(n){const p=vm.split('-').map(Number);const d=new Date(p[0],p[1]-1+n,1);vm=d.getFullYear()+'-'+pad(d.getMonth()+1);render();}
 
 $('date').addEventListener('change',()=>{vm=$('date').value.slice(0,7);render();});
