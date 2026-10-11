@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Мои продажи</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#14171a;--mu:#6b7280;--ac:#2563eb;--bd:#e5e7eb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1115;--card:#1a1d23;--tx:#f1f3f5;--mu:#9aa3af;--bd:#2a2f38}}
+:root[data-theme="dark"]{--bg:#0f1115;--card:#1a1d23;--tx:#f1f3f5;--mu:#9aa3af;--bd:#2a2f38}
+*{box-sizing:border-box}
+body{margin:0 auto;background:linear-gradient(180deg,rgba(22,163,74,.16),transparent 300px),var(--bg);color:var(--tx);font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;padding:14px 14px 48px;max-width:520px;-webkit-tap-highlight-color:transparent}
+.top{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 14px}
+h1{font-size:26px;font-weight:800;letter-spacing:-.4px;margin:0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .card{box-shadow:0 8px 24px rgba(0,0,0,.35)}}
+:root[data-theme="dark"] .card{box-shadow:0 8px 24px rgba(0,0,0,.35)}
+label{display:block;font-size:12px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--mu);margin:12px 0 6px}
+label:first-child{margin-top:0}
+input,textarea{width:100%;font-size:18px;font-weight:600;padding:13px;border-radius:14px;border:1.5px solid var(--bd);background:var(--bg);color:var(--tx)}
+input:focus,textarea:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 4px rgba(37,99,235,.18)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{font-size:16px;font-weight:700;padding:14px 8px;border:0;border-radius:14px;color:#fff;cursor:pointer;width:100%;transition:transform .1s}
+button:active{transform:scale(.96)}
+.p{background:linear-gradient(135deg,#60a5fa,#1d4ed8);box-shadow:0 6px 14px rgba(0,0,0,.18);margin-top:14px}
+.gr{background:linear-gradient(135deg,#22c55e,#15803d);box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.sm{width:auto;background:var(--card);color:var(--tx);border:1px solid var(--bd);padding:8px 14px}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nav button{width:48px;padding:8px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:12px}
+#mt{font-size:21px;font-weight:800;text-transform:capitalize}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.grid div{background:var(--bg);border-radius:16px;padding:13px;font-size:21px;font-weight:800}
+.grid small{display:block;font-size:12px;font-weight:500;color:var(--mu);margin-bottom:3px}
+.grid div:nth-child(3){grid-column:1/-1;background:linear-gradient(135deg,#16a34a,#0e7490);color:#fff;font-size:30px}
+.grid div:nth-child(3) small{color:rgba(255,255,255,.85)}
+.li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 0;border-bottom:1px solid var(--bd);font-size:15px}
+.li:last-child{border:0}
+.li small{display:block;color:var(--mu);font-size:12px}
+.li .r{font-weight:800;white-space:nowrap;color:#16a34a}
+.x{background:none;color:var(--mu);width:auto;padding:2px 10px;font-size:18px}
+.hint{font-size:12px;color:var(--mu);margin-top:8px;line-height:1.45}
+.bars{display:flex;align-items:flex-end;gap:2px;height:130px;padding-top:6px}
+.bar{flex:1;background:var(--ac);border-radius:4px 4px 0 0;cursor:pointer;min-height:2px}
+.bar.none{background:var(--bd)}
+.bar.best{background:#16a34a}
+.bar.worst{background:#dc2626}
+.tab{background:var(--bg);color:var(--tx);border:1px solid var(--bd);box-shadow:none;padding:10px 4px;font-size:14px}
+.tab.on{background:linear-gradient(135deg,#60a5fa,#1d4ed8);color:#fff;border-color:transparent}
+#daygrid{grid-template-columns:repeat(3,1fr);gap:8px}
+#daygrid div{font-size:17px;padding:11px}
+#daygrid div:nth-child(3){order:-1;grid-column:1/-1;font-size:32px;padding:14px}
+#grid div:nth-child(3){grid-column:auto;background:var(--bg);color:#16a34a;font-size:21px}
+#grid div:nth-child(3) small{color:var(--mu)}
+body{padding-bottom:110px}
+.v{display:none}
+.v.on{display:block}
+#v_today.on{display:flex;flex-direction:column}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding:6px 6px calc(8px + env(safe-area-inset-bottom,0px));z-index:10}
+.tabs button{flex:1;background:none;color:var(--mu);box-shadow:none;border-radius:12px;padding:6px 2px;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabs button span{font-size:21px;line-height:1}
+.tabs button.on{color:var(--ac)}
+.lbl{display:flex;gap:2px;margin-top:4px}
+.lbl span{flex:1;text-align:center;font-size:9px;color:var(--mu);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="top"><h1>🛒 Мои продажи</h1><button class="sm" onclick="toggleTheme()">☀️ / 🌙</button></div>
+
+<section class="v" id="v_top">
+<div class="card">
+  <label>🏆 Топ товаров</label>
+  <div class="g2" style="grid-template-columns:repeat(3,1fr)">
+    <button class="tab" id="tab_day" onclick="setTop('day')">День</button>
+    <button class="tab" id="tab_week" onclick="setTop('week')">Неделя</button>
+    <button class="tab on" id="tab_month" onclick="setTop('month')">Месяц</button>
+  </div>
+  <div class="hint" id="toptitle"></div>
+  <div id="toplist"></div>
+</div>
+
+</section>
+<section class="v on" id="v_today">
+<div class="card">
+  <label for="date">Дата</label>
+  <input type="date" id="date">
+  <label for="name">Что продал</label>
+  <input type="text" id="name" placeholder="Например: аптека" list="names" autocomplete="off">
+  <datalist id="names"></datalist>
+  <div class="g2">
+    <div><label for="q">Сколько штук</label><input type="text" inputmode="decimal" id="q" placeholder="1"></div>
+    <div><label for="s">Продал на сумму</label><input type="text" inputmode="decimal" id="s" placeholder="20000"></div>
+  </div>
+  <label for="c">Закупка (сколько стоил тебе), если есть</label>
+  <input type="text" inputmode="decimal" id="c" placeholder="12000">
+  <button class="p" onclick="addSale()">✔ Записать продажу</button>
+  <div class="hint" id="msg">Заработок = продал − закупка. Если закупку не писать, весь доход считается заработком.</div>
+</div>
+
+<div class="card">
+  <label>🕘 Смена аптеки на дату выше</label>
+  <div class="g2">
+    <button class="p" style="margin-top:0" onclick="setShift('night')">🌙 Ночь 19:00–9:00</button>
+    <button class="gr" onclick="setShift('full')">☀️ Сутки 24 ч</button>
+  </div>
+  <div class="g2" style="margin-top:10px">
+    <button class="sm" style="width:100%" onclick="setShift('rest')">🌴 Отдых</button>
+    <button class="sm" style="width:100%" onclick="delShift()">🗑 Удалить отметку</button>
+  </div>
+  <div id="shlist" style="margin-top:10px"></div>
+</div>
+
+<div class="card" id="c_day" style="order:-1">
+  <div id="dayhead" style="font-size:20px;font-weight:800"></div>
+  <div class="hint" id="dayshift"></div>
+  <div class="grid" id="daygrid"></div>
+</div>
+
+</section>
+<section class="v" id="v_months">
+<div class="card">
+  <div class="nav"><button onclick="mv(-1)">‹</button><div id="mt"></div><button onclick="mv(1)">›</button></div>
+  <div class="grid" id="grid"></div>
+  <div class="hint" id="shsum" style="font-size:15px;font-weight:700;color:var(--tx)"></div>
+  <div id="cmp" style="margin-top:8px;font-size:15px;font-weight:700"></div>
+</div>
+
+<div class="card">
+  <label>📅 Все месяцы</label>
+  <div id="months"></div>
+  <div class="hint">Нажми на месяц, чтобы открыть его по дням.</div>
+</div>
+
+<div class="card">
+  <label>📈 Продажи по дням</label>
+  <div class="bars" id="bars"></div>
+  <div class="lbl" id="lbl"></div>
+  <div id="chtext" style="margin-top:12px;font-size:15px;line-height:1.6"></div>
+  <div class="hint" id="chday">Нажми на столбик, чтобы увидеть день. 🟩 лучший день, 🟥 самый слабый (считаются дни, где была смена или продажа).</div>
+</div>
+
+<div class="card">
+  <label>Продажи за месяц</label>
+  <div id="list"></div>
+</div>
+
+</section>
+<section class="v" id="v_backup">
+<div class="card">
+  <label>💾 Резервная копия (для нового телефона)</label>
+  <textarea id="bk" style="min-height:90px;font-size:13px" placeholder="Здесь появится текст копии. Для загрузки вставь сюда текст копии."></textarea>
+  <div class="g2" style="margin-top:10px"><button class="p" style="margin-top:0" onclick="makeBackup()">📋 Сохранить копию</button><button class="gr" onclick="loadBackup()">⬇ Загрузить копию</button></div>
+  <div class="hint" id="bkmsg"></div>
+</div>
+</section>
+<div class="hint">Данные хранятся в этом телефоне, в этом браузере.</div>
+<nav class="tabs">
+  <button id="nt_today" class="on" onclick="showTab('today')"><span>📅</span>Сегодня</button>
+  <button id="nt_months" onclick="showTab('months')"><span>🗓</span>Месяцы</button>
+  <button id="nt_top" onclick="showTab('top')"><span>🏆</span>Топ</button>
+  <button id="nt_backup" onclick="showTab('backup')"><span>💾</span>Копия</button>
+</nav>
+
+<script>
+const KEY='sales.v1';
+let db={sales:[],shifts:{}};
+try{const s=localStorage.getItem(KEY);if(s){const o=JSON.parse(s);if(o&&Array.isArray(o.sales))db.sales=o.sales;if(o&&o.shifts&&typeof o.shifts==='object')db.shifts=o.shifts;}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}}
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+const num=v=>parseFloat(String(v).replace(/\s/g,'').replace(',','.'))||0;
+const fmt=x=>Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const esc=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+let vm=todayStr().slice(0,7);
+let tm=null;
+function msg(t){$('msg').textContent=t;clearTimeout(tm);tm=setTimeout(()=>{$('msg').textContent='Заработок = продал − закупка. Если закупку не писать, весь доход считается заработком.';},2500);}
+function mv(n){const p=vm.split('-').map(Number);const d=new Date(p[0],p[1]-1+n,1);vm=d.getFullYear()+'-'+pad(d.getMonth()+1);render();}
+function addSale(){
+  const d=$('date').value||todayStr();
+  const name=$('name').value.trim()||'Продажа';
+  const q=num($('q').value)||1,s=num($('s').value),c=num($('c').value);
+  if(!s){msg('Впиши, на какую сумму продал.');return;}
+  db.sales.push({id:Date.now(),d:d,name:name,q:q,s:s,c:c});
+  vm=d.slice(0,7);
+  ['name','q','s','c'].forEach(i=>{$(i).value='';});
+  save();render();msg('Записано ✓');
+}
+function delSale(id){db.sales=db.sales.filter(x=>x.id!==id);save();render();}
+const SH={night:{n:'Ночь 19:00–9:00',h:14},full:{n:'Сутки 24 ч',h:24},rest:{n:'Отдых',h:0}};
+let topTab='month';
+function setTop(t){topTab=t;renderTop();}
+function weekRange(d){const x=new Date(d+'T00:00:00');const dow=(x.getDay()+6)%7;const a=new Date(x);a.setDate(x.getDate()-dow);const b=new Date(a);b.setDate(a.getDate()+6);const f=z=>z.getFullYear()+'-'+pad(z.getMonth()+1)+'-'+pad(z.getDate());return [f(a),f(b)];}
+function renderTop(){
+  const d=$('date').value||todayStr();
+  let from,to,title;
+  if(topTab==='day'){from=d;to=d;title='День '+dm(d);}
+  else if(topTab==='week'){const r=weekRange(d);from=r[0];to=r[1];title='Неделя '+dm(from)+'–'+dm(to);}
+  else{from=vm+'-01';to=vm+'-31';title='Месяц: '+new Date(vm+'-01T00:00:00').toLocaleDateString('ru-RU',{month:'long',year:'numeric'});}
+  ['day','week','month'].forEach(k=>{$('tab_'+k).classList.toggle('on',k===topTab);});
+  const m={};
+  db.sales.forEach(x=>{if(x.d<from||x.d>to)return;const k=String(x.name).trim().toLowerCase();const o=m[k]||(m[k]={n:x.name,q:0,s:0,p:0});o.q+=x.q;o.s+=x.s;o.p+=x.s-x.c;});
+  const L=Object.keys(m).map(k=>m[k]).sort((a,b)=>b.q-a.q||b.s-a.s).slice(0,5);
+  const med=['🥇','🥈','🥉','4.','5.'];
+  $('toptitle').textContent=title+' · по количеству проданных штук';
+  $('toplist').innerHTML=L.length?L.map((o,i)=>'<div class="li"><span><b>'+med[i]+' '+esc(o.n)+'</b><small>×'+(Math.round(o.q*10)/10)+' · продал '+fmt(o.s)+'</small></span><span class="r">+'+fmt(o.p)+'</span></div>').join(''):'<div class="hint">За этот период продаж нет</div>';
+}
+function openMonth(m){vm=m;render();window.scrollTo(0,0);}
+function renderMonths(){
+  const M={};
+  db.sales.forEach(x=>{const k=x.d.slice(0,7);const o=M[k]||(M[k]={s:0,p:0,n:0});o.s+=x.s;o.p+=x.s-x.c;o.n++;});
+  const keys=Object.keys(M).sort().reverse();
+  let ts=0,tp=0;keys.forEach(k=>{ts+=M[k].s;tp+=M[k].p;});
+  $('months').innerHTML=keys.length?keys.map(k=>'<div class="li" style="cursor:pointer" onclick="openMonth(\''+k+'\')"><span><b style="text-transform:capitalize">'+new Date(k+'-01T00:00:00').toLocaleDateString('ru-RU',{month:'long',year:'numeric'})+'</b>'+(k===vm?' ◀':'')+'<small>продал '+fmt(M[k].s)+' · продаж: '+M[k].n+'</small></span><span class="r">+'+fmt(M[k].p)+'</span></div>').join('')+'<div class="li"><span><b>Всего за всё время</b><small>продал '+fmt(ts)+'</small></span><span class="r">+'+fmt(tp)+'</span></div>':'<div class="hint">Пока нет продаж</div>';
+}
+function renderDay(){
+  const d=$('date').value||todayStr();
+  let q=0,s=0,c=0;db.sales.forEach(x=>{if(x.d===d){q+=x.q;s+=x.s;c+=x.c;}});
+  const nm=new Date(d+'T00:00:00').toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+  $('dayhead').textContent=(d===todayStr()?'Сегодня · ':'')+nm;
+  $('daygrid').innerHTML='<div><small>Продано, шт</small>'+(Math.round(q*10)/10)+'</div><div><small>Продал на сумму</small>'+fmt(s)+'</div><div><small>Заработал за день</small>'+fmt(s-c)+'</div><div><small>Закупка</small>'+fmt(c)+'</div>';
+  const sh=db.shifts[d];$('dayshift').textContent=sh?'Смена: '+SH[sh.t].n:'Смена не отмечена';
+}
+function showTab(t){['today','months','top','backup'].forEach(k=>{$('v_'+k).classList.toggle('on',k===t);$('nt_'+k).classList.toggle('on',k===t);});window.scrollTo(0,0);}
+function profitOf(m){let s=0,c=0;db.sales.forEach(x=>{if(x.d.startsWith(m)){s+=x.s;c+=x.c;}});return s-c;}
+function renderCmp(){
+  const p=vm.split('-').map(Number),pd=new Date(p[0],p[1]-2,1),pm=pd.getFullYear()+'-'+pad(pd.getMonth()+1);
+  const cur=profitOf(vm),prev=profitOf(pm),nm=pd.toLocaleDateString('ru-RU',{month:'long'}),el=$('cmp');
+  if(!prev){el.style.color='var(--mu)';el.textContent='В прошлом месяце ('+nm+') продаж не было, сравнивать не с чем.';return;}
+  const pct=Math.round((cur-prev)/Math.abs(prev)*100),up=cur>=prev;
+  el.style.color=up?'#16a34a':'#dc2626';
+  el.textContent=(up?'▲ ':'▼ ')+Math.abs(pct)+'% к прошлому месяцу ('+nm+'): было '+fmt(prev)+', стало '+fmt(cur);
+}
+function dayStats(d){let s=0,c=0;db.sales.forEach(x=>{if(x.d===d){s+=x.s;c+=x.c;}});return {s:s,p:s-c};}
+function dm(d){return d.slice(8)+'.'+d.slice(5,7);}
+function showDay(d){const st=dayStats(d),sh=db.shifts[d];$('chday').textContent=dm(d)+' · продал '+fmt(st.s)+' · заработал '+fmt(st.p)+(sh?' · '+SH[sh.t].n:'');}
+function renderChart(){
+  const p=vm.split('-').map(Number),n=new Date(p[0],p[1],0).getDate();
+  const days=[];let max=0,best=null,worst=null;
+  for(let i=1;i<=n;i++){
+    const d=vm+'-'+pad(i),st=dayStats(d),sh=db.shifts[d],act=st.s>0||!!(sh&&sh.t!=='rest');
+    const o={d:d,i:i,s:st.s,act:act};days.push(o);
+    if(st.s>max)max=st.s;
+    if(act){if(!best||o.s>best.s)best=o;if(!worst||o.s<worst.s)worst=o;}
+  }
+  if(best&&best.s===0)best=null;
+  if(worst&&best&&worst.d===best.d)worst=null;
+  $('bars').innerHTML=days.map(x=>{const cl=best&&x.d===best.d?'best':(worst&&x.d===worst.d?'worst':(x.act?'':'none'));return '<div class="bar '+cl+'" style="height:'+(max?Math.max(2,Math.round(x.s/max*100)):2)+'%" onclick="showDay(\''+x.d+'\')"></div>';}).join('');
+  $('lbl').innerHTML=days.map(x=>'<span>'+((x.i===1||x.i%5===0)?x.i:'')+'</span>').join('');
+  let t='';
+  if(best)t+='🏆 Лучший день: <b>'+dm(best.d)+'</b>, продал '+fmt(best.s)+'<br>';
+  if(worst)t+='📉 Самый слабый: <b>'+dm(worst.d)+'</b>, продал '+fmt(worst.s)+(worst.s===0?' (была смена, продаж нет)':'')+'<br>';
+  $('chtext').innerHTML=t||'<span style="color:var(--mu)">Пока мало данных для сравнения.</span>';
+}
+function setShift(t){const d=$('date').value||todayStr();db.shifts[d]={t:t,h:SH[t].h};vm=d.slice(0,7);save();render();}
+function delShift(){const d=$('date').value||todayStr();delete db.shifts[d];save();render();}
+function render(){
+  const L=db.sales.filter(x=>x.d.startsWith(vm)).sort((a,b)=>a.d<b.d?-1:1);
+  let q=0,s=0,c=0;L.forEach(x=>{q+=x.q;s+=x.s;c+=x.c;});
+  $('mt').textContent=new Date(vm+'-01T00:00:00').toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
+  $('grid').innerHTML='<div><small>Продано, шт</small>'+(Math.round(q*10)/10)+'</div><div><small>Продал на сумму</small>'+fmt(s)+'</div><div><small>Заработал</small>'+fmt(s-c)+'</div><div><small>Закупка</small>'+fmt(c)+'</div>';
+  $('list').innerHTML=L.length?L.map(x=>'<div class="li"><span><b>'+esc(x.name)+'</b> ×'+x.q+'<small>'+x.d.slice(8)+'.'+x.d.slice(5,7)+' · продал '+fmt(x.s)+(x.c?' · закупка '+fmt(x.c):'')+'</small></span><span class="r">+'+fmt(x.s-x.c)+'<button class="x" onclick="delSale('+x.id+')">✕</button></span></div>').join(''):'<div class="hint">Пока нет продаж</div>';
+  renderChart();renderTop();renderMonths();renderDay();renderCmp();
+  const sk=Object.keys(db.shifts).filter(k=>k.startsWith(vm)).sort();
+  let sc=0,sh=0;sk.forEach(k=>{const x=db.shifts[k];if(x.t!=='rest'){sc++;sh+=x.h;}});
+  $('shsum').textContent='Смен: '+sc+' · Часов: '+sh;
+  $('shlist').innerHTML=sk.length?sk.map(k=>'<div class="li"><span><b>'+k.slice(8)+'.'+k.slice(5,7)+'</b> '+new Date(k+'T00:00:00').toLocaleDateString('ru-RU',{weekday:'short'})+'</span><span>'+SH[db.shifts[k].t].n+'</span></div>').join(''):'<div class="hint">Пока нет смен</div>';
+  const names=[];db.sales.forEach(x=>{if(names.indexOf(x.name)<0)names.push(x.name);});
+  $('names').innerHTML=names.map(n=>'<option value="'+esc(n)+'">').join('');
+}
+function makeBackup(){
+  const t=JSON.stringify({v:2,sales:db.sales,shifts:db.shifts});
+  $('bk').value=t;
+  let ok=false;
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t);ok=true;}}catch(e){}
+  $('bkmsg').textContent=ok?'Копия скопирована. Вставь её в заметку или отправь себе в Телеграм.':'Нажми на текст выше, выбери «Выбрать всё» и «Копировать».';
+}
+function loadBackup(){
+  let o;
+  try{o=JSON.parse($('bk').value.trim());}catch(e){$('bkmsg').textContent='Не получилось прочитать. Вставь копию целиком.';return;}
+  if(!o||!Array.isArray(o.sales)){$('bkmsg').textContent='Это не копия продаж.';return;}
+  let n=0;
+  o.sales.forEach(x=>{
+    if(!x||!x.id||!x.d||!(Number(x.s)>0))return;
+    if(!db.sales.some(y=>y.id===x.id)){db.sales.push({id:x.id,d:String(x.d),name:String(x.name||'Продажа'),q:Number(x.q)||1,s:Number(x.s),c:Number(x.c)||0});n++;}
+  });
+  if(o.shifts&&typeof o.shifts==='object'){Object.keys(o.shifts).forEach(k=>{const x=o.shifts[k];if(x&&SH[x.t])db.shifts[k]={t:x.t,h:SH[x.t].h};});}
+  save();render();$('bkmsg').textContent='Загружено продаж: '+n+' ✓';
+}
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);}
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const n=c==='dark'?'light':'dark';applyTheme(n);try{localStorage.setItem('theme.sales',n);}catch(e){}}
+try{const t=localStorage.getItem('theme.sales');if(t)applyTheme(t);}catch(e){}
+$('date').value=todayStr();
+$('date').addEventListener('change',()=>{vm=$('date').value.slice(0,7)||vm;render();});
+showTab('today');
+render();
+</script>
+</body>
+</html>
