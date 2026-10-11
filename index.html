@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Мой график</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#14171a;--mu:#6b7280;--ac:#2563eb;--ok:#16a34a;--rest:#0891b2;--duty:#d97706;--sh:#7c3aed;--bd:#e5e7eb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1115;--card:#1a1d23;--tx:#f1f3f5;--mu:#9aa3af;--bd:#2a2f38}}
+:root[data-theme="dark"]{--bg:#0f1115;--card:#1a1d23;--tx:#f1f3f5;--mu:#9aa3af;--bd:#2a2f38}
+*{box-sizing:border-box}
+body{margin:0 auto;background:var(--bg);color:var(--tx);font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;padding:14px;max-width:520px}
+h1{font-size:20px;margin:4px 0 12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+label{font-size:13px;color:var(--mu);display:block;margin:10px 0 6px}
+label:first-child{margin-top:0}
+input{width:100%;font-size:18px;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+button{font-size:16px;font-weight:600;padding:14px 6px;border:2px solid transparent;border-radius:12px;color:#fff;cursor:pointer;width:100%}
+.w{background:var(--ok)}.r{background:var(--rest)}.d{background:var(--duty)}.s{background:var(--sh)}.p{background:var(--ac)}.x2{background:#dc2626}
+button.on{border-color:var(--tx)}
+.cur{margin-top:10px;font-size:15px;color:var(--mu)}.cur b{color:var(--tx)}
+.big{font-size:20px;font-weight:700}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nav button{width:48px;padding:8px;background:var(--bg);color:var(--tx);border:1px solid var(--bd)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.grid div{background:var(--bg);border-radius:10px;padding:10px;font-size:18px}
+.grid small{display:block;color:var(--mu);font-size:12px}
+.li{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px;gap:6px}
+.li:last-child{border:0}
+.li span:last-child{font-weight:700;white-space:nowrap}
+.x{background:none;color:var(--mu);width:auto;padding:2px 10px;font-size:18px;border:0}
+.hint{font-size:12px;color:var(--mu);margin-top:8px}
+summary{font-weight:600;cursor:pointer}
+.tag{display:inline-block;font-size:11px;padding:2px 6px;border-radius:6px;color:#fff;margin-left:4px}
+</style>
+</head>
+<body>
+<div class="nav"><h1 style="margin:4px 0">📅 Мой график</h1><button onclick="toggleTheme()" style="width:auto;padding:8px 14px;background:var(--card);color:var(--tx);border:1px solid var(--bd)">☀️ / 🌙</button></div>
+
+<div class="card">
+  <label for="date">Дата</label>
+  <input type="date" id="date">
+  <div class="g2">
+    <button class="w" id="b_work" onclick="setStatus('work')">💼 Работал</button>
+    <button class="r" id="b_rest" onclick="setStatus('rest')">🌴 Отдых</button>
+    <button class="d" id="b_duty" onclick="setStatus('duty')">🚨 Дежурный</button>
+    <button class="s" id="b_short" onclick="setStatus('short')">⏱ Короткий день</button>
+  </div>
+  <label for="hrs">Часов в этот день</label>
+  <input type="text" inputmode="decimal" id="hrs" placeholder="Сначала выбери кнопку">
+  <div class="g2"><button class="p" onclick="saveHours()">✔ Сохранить часы</button><button class="x2" onclick="delDay()">🗑 Удалить день</button></div>
+  <div class="hint" id="msg"></div>
+  <div class="cur">Этот день: <b id="cur"></b></div>
+</div>
+
+<div class="card">
+  <label for="amt">Зарплата (сколько получил)</label>
+  <input type="text" inputmode="decimal" id="amt" placeholder="Например 150000">
+  <div class="hint">Запишется за месяц: <b id="paymo"></b>. Чтобы выбрать другой месяц, нажми стрелку ‹ или › в блоке ниже.</div>
+  <div class="g2" style="grid-template-columns:1fr"><button class="p" onclick="addPay()">💰 Записать</button></div>
+</div>
+
+<div class="card">
+  <div class="nav">
+    <button onclick="mv(-1)">‹</button>
+    <div class="big" id="mt"></div>
+    <button onclick="mv(1)">›</button>
+  </div>
+  <div class="grid">
+    <div><small>Работал дней</small><b id="s_days"></b></div>
+    <div><small>Всего часов</small><b id="s_hrs"></b></div>
+    <div><small>Получил всего</small><b id="s_tot"></b></div>
+    <div><small>За 1 час</small><b id="s_rate"></b></div>
+    <div><small>В среднем за день</small><b id="s_avg"></b></div>
+    <div><small>Дежурных / коротких / отдых</small><b id="s_x"></b></div>
+  </div>
+  <div class="hint" id="rnote"></div>
+</div>
+
+<div class="card">
+  <label>По дням (часы и сколько заработал)</label>
+  <div id="list"></div>
+</div>
+
+<div class="card">
+  <label>Выплаты за месяц</label>
+  <div id="pays"></div>
+</div>
+
+<div class="card">
+  <details>
+    <summary>⚙️ Настройки</summary>
+    <label for="set_work">Часов в рабочий день</label><input type="text" inputmode="decimal" id="set_work">
+    <label for="set_duty">Часов в дежурный день</label><input type="text" inputmode="decimal" id="set_duty">
+    <label for="set_short">Часов в короткий день</label><input type="text" inputmode="decimal" id="set_short">
+    <label for="set_rate">Моя ставка за час (если пусто, считается из полученной зарплаты)</label><input type="text" inputmode="decimal" id="set_rate">
+    <div class="g2" style="grid-template-columns:1fr"><button class="p" onclick="saveSettings(this)">✔ Сохранить настройки</button></div>
+  </details>
+</div>
+<div class="hint">Данные хранятся в этом телефоне, в этом браузере.</div>
+
+<script>
+const KEY='workLog.v2';
+let db={days:{},pay:[],set:{work:9,duty:9,short:6,rate:0}};
+function hoursFor(s){return s==='rest'?0:(Number(db.set[s])||0);}
+try{
+  const s=localStorage.getItem(KEY)||localStorage.getItem('workLog.v1');
+  if(s){
+    const o=JSON.parse(s);
+    db.pay=o.pay||[];db.set=Object.assign(db.set,o.set||{});
+    Object.keys(o.days||{}).forEach(k=>{const v=o.days[k];db.days[k]=typeof v==='string'?{s:v,h:hoursFor(v)}:v;});
+  }
+}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}}
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+const N={work:'Работа',rest:'Отдых',duty:'Дежурный',short:'Короткий день'};
+const C={work:'#16a34a',rest:'#0891b2',duty:'#d97706',short:'#7c3aed'};
+function fmt(x){return Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
+function num(v){return parseFloat(String(v).replace(/\s/g,'').replace(',','.'))||0;}
+let vm=todayStr().slice(0,7);
+
+function setStatus(s){db.days[$('date').value]={s:s,h:hoursFor(s)};save();render();}
+function addPay(){const v=num($('amt').value);if(!v)return;db.pay.push({d:$('date').value,m:vm,a:v});$('amt').value='';save();render();}
+function delPay(i){db.pay.splice(i,1);save();render();}
+function flash(t){$('msg').textContent=t;setTimeout(()=>{$('msg').textContent='';},2500);}
+function saveHours(){const d=$('date').value,x=db.days[d];if(!x){flash('Сначала выбери кнопку: Работал, Отдых и т.д.');return;}x.h=Math.min(24,Math.max(0,num($('hrs').value)));save();render();flash('Сохранено ✓');}
+function delDay(){const d=$('date').value;if(!db.days[d]){flash('В этот день нет записи');return;}delete db.days[d];save();render();flash('День удалён');}
+function saveSettings(b){['work','duty','short'].forEach(k=>{db.set[k]=num($('set_'+k).value);});db.set.rate=num($('set_rate').value);save();render();const t=b.textContent;b.textContent='Сохранено ✓';setTimeout(()=>{b.textContent=t;},2000);}
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);}
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const n=c==='dark'?'light':'dark';applyTheme(n);try{localStorage.setItem('theme.v1',n);}catch(e){}}
+try{const t=localStorage.getItem('theme.v1');if(t)applyTheme(t);}catch(e){}
+function mv(n){const p=vm.split('-').map(Number);const d=new Date(p[0],p[1]-1+n,1);vm=d.getFullYear()+'-'+pad(d.getMonth()+1);render();}
+
+$('date').addEventListener('change',()=>{vm=$('date').value.slice(0,7);render();});
+$('hrs').addEventListener('change',()=>{const d=$('date').value,x=db.days[d];if(x){x.h=Math.min(24,Math.max(0,num($('hrs').value)));save();render();}});
+['work','duty','short'].forEach(k=>$('set_'+k).addEventListener('change',()=>{db.set[k]=num($('set_'+k).value);save();}));
+$('set_rate').addEventListener('change',()=>{db.set.rate=num($('set_rate').value);save();render();});
+
+function render(){
+  const d=$('date').value||todayStr(),cur=db.days[d];
+  $('cur').textContent=cur?N[cur.s]:'не отмечено';
+  ['work','rest','duty','short'].forEach(k=>$('b_'+k).classList.toggle('on',!!cur&&cur.s===k));
+  $('hrs').value=cur?cur.h:'';$('hrs').disabled=!cur;
+  const keys=Object.keys(db.days).filter(k=>k.startsWith(vm)).sort();
+  let hrs=0,wd=0,du=0,sh=0,rs=0;
+  keys.forEach(k=>{const x=db.days[k];if(x.s==='rest'){rs++;return;}wd++;hrs+=x.h;if(x.s==='duty')du++;if(x.s==='short')sh++;});
+  const pays=db.pay.map((p,i)=>({d:p.d,m:p.m||p.d.slice(0,7),a:p.a,i:i})).filter(p=>p.m===vm).sort((a,b)=>a.d<b.d?-1:1);
+  const total=pays.reduce((s,p)=>s+p.a,0);
+  const own=db.set.rate>0;
+  const rate=own?db.set.rate:(hrs?total/hrs:0);
+  const mn=new Date(vm+'-01T00:00:00').toLocaleDateString('ru-RU',{month:'long',year:'numeric'});$('mt').textContent=mn;$('paymo').textContent=mn;
+  $('s_days').textContent=wd;$('s_hrs').textContent=(Math.round(hrs*10)/10);
+  $('s_tot').textContent=fmt(total);$('s_rate').textContent=fmt(rate);
+  $('s_avg').textContent=wd?fmt(total/wd):'0';
+  $('s_x').textContent=du+' / '+sh+' / '+rs;
+  $('rnote').textContent=(own?'Заработок по дням считается по твоей ставке.':'Ставка за час = полученная зарплата ÷ часы за месяц.')+' Суммы по дням округлены до целых, поэтому их сумма может отличаться от итога на несколько единиц. Итог всегда точный.';
+  $('list').innerHTML=keys.length?keys.map(k=>{
+    const x=db.days[k],wk=new Date(k+'T00:00:00').toLocaleDateString('ru-RU',{weekday:'short'});
+    return '<div class="li"><span>'+k.slice(8)+'.'+k.slice(5,7)+' '+wk+'<span class="tag" style="background:'+C[x.s]+'">'+N[x.s]+'</span></span><span>'+(x.s==='rest'?'—':(x.h+' ч · '+fmt(x.h*rate)))+'</span></div>';
+  }).join(''):'<div class="hint">Пока нет отметок</div>';
+  $('pays').innerHTML=pays.length?pays.map(p=>'<div class="li"><span>'+p.d.slice(8)+'.'+p.d.slice(5,7)+'</span><span>'+fmt(p.a)+'<button class="x" onclick="delPay('+p.i+')">✕</button></span></div>').join(''):'<div class="hint">Пока нет записей</div>';
+}
+(function(){
+  let done=false;try{done=localStorage.getItem('seed.sep2026')==='1';}catch(e){}
+  if(done)return;
+  const S=[9,9,9,9,9,6,9,9,9,9,9,9,9,9,0,9,9,9,9,9,9,9,9,9,9,9,6,9,9,9];
+  S.forEach((h,i)=>{
+    const k='2026-09-'+pad(i+1);if(db.days[k])return;
+    const wd=new Date(k+'T00:00:00').getDay();
+    db.days[k]=h===0?{s:'rest',h:0}:(wd===0?{s:(h<9?'short':'duty'),h:h}:{s:'work',h:h});
+  });
+  if(!db.days['2026-10-11'])db.days['2026-10-11']={s:'duty',h:9};
+  save();try{localStorage.setItem('seed.sep2026','1');}catch(e){}
+})();
+$('date').value=todayStr();
+['work','duty','short'].forEach(k=>$('set_'+k).value=db.set[k]);
+$('set_rate').value=db.set.rate||'';
+render();
+</script>
+</body>
+</html>
