@@ -69,12 +69,25 @@ button.on{border-color:transparent;box-shadow:0 0 0 3px var(--card),0 0 0 6px va
 .tag{border-radius:999px;padding:3px 10px;font-weight:600}
 summary{font-size:16px;padding:4px 0}
 .hint{line-height:1.45}
+body{display:flex;flex-direction:column;padding-bottom:110px}
+[data-v]{display:none}
+body[data-tab="today"] [data-v="today"],body[data-tab="month"] [data-v="month"],body[data-tab="more"] [data-v="more"]{display:block}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding:6px 6px calc(8px + env(safe-area-inset-bottom,0px));z-index:10}
+.tabs button{flex:1;background:none;color:var(--mu);box-shadow:none;border-radius:12px;padding:6px 2px;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabs button span{font-size:21px;line-height:1}
+.tabs button.on{box-shadow:none;border-color:transparent;color:var(--ac)}
 </style>
 </head>
 <body>
 <div class="nav"><h1 style="margin:4px 0">📅 Мой график</h1><button onclick="toggleTheme()" style="width:auto;padding:8px 14px;background:var(--card);color:var(--tx);border:1px solid var(--bd)">☀️ / 🌙</button></div>
 
-<div class="card">
+<div class="card" data-v="today" style="order:1">
+  <div id="dayhead" style="font-size:20px;font-weight:800"></div>
+  <div id="daybig" style="margin-top:10px"></div>
+  <div class="grid" id="daygrid"></div>
+</div>
+
+<div class="card" data-v="today" style="order:2">
   <label for="date">Дата</label>
   <input type="date" id="date">
   <div class="g2">
@@ -90,14 +103,14 @@ summary{font-size:16px;padding:4px 0}
   <div class="cur">Этот день: <b id="cur"></b></div>
 </div>
 
-<div class="card">
+<div class="card" data-v="month" style="order:2">
   <label for="amt">Зарплата (сколько получил)</label>
   <input type="text" inputmode="decimal" id="amt" placeholder="Например 150000">
-  <div class="hint">Запишется за месяц: <b id="paymo"></b>. Чтобы выбрать другой месяц, нажми стрелку ‹ или › в блоке ниже.</div>
+  <div class="hint">Запишется за месяц: <b id="paymo"></b>. Чтобы выбрать другой месяц, нажми стрелку ‹ или › в блоке с итогами выше.</div>
   <div class="g2" style="grid-template-columns:1fr"><button class="p" onclick="addPay()">💰 Записать</button></div>
 </div>
 
-<div class="card">
+<div class="card" data-v="month" style="order:1">
   <div class="nav">
     <button onclick="mv(-1)">‹</button>
     <div class="big" id="mt"></div>
@@ -112,19 +125,20 @@ summary{font-size:16px;padding:4px 0}
     <div><small>Дежурных / коротких / отдых</small><b id="s_x"></b></div>
   </div>
   <div class="hint" id="rnote"></div>
+  <div id="cmp" style="margin-top:8px;font-size:15px;font-weight:700"></div>
 </div>
 
-<div class="card">
+<div class="card" data-v="month" style="order:4">
   <label>По дням (часы и сколько заработал)</label>
   <div id="list"></div>
 </div>
 
-<div class="card">
+<div class="card" data-v="month" style="order:3">
   <label>Выплаты за месяц</label>
   <div id="pays"></div>
 </div>
 
-<div class="card">
+<div class="card" data-v="more" style="order:1">
   <details>
     <summary>⚙️ Настройки</summary>
     <label for="set_work">Часов в рабочий день</label><input type="text" inputmode="decimal" id="set_work">
@@ -134,23 +148,28 @@ summary{font-size:16px;padding:4px 0}
     <div class="g2" style="grid-template-columns:1fr"><button class="p" onclick="saveSettings(this)">✔ Сохранить настройки</button></div>
   </details>
 </div>
-<div class="card">
+<div class="card" data-v="more" style="order:2">
   <label>💾 Резервная копия (для нового телефона)</label>
   <textarea id="bk" placeholder="Здесь появится текст копии. Для загрузки вставь сюда текст копии." style="width:100%;min-height:90px;font-size:13px;padding:8px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)"></textarea>
   <div class="g2"><button class="p" onclick="makeBackup()">📋 Сохранить копию</button><button class="w" onclick="loadBackup()">⬇ Загрузить копию</button></div>
   <div class="hint" id="bkmsg"></div>
 </div>
-<div class="hint">Данные хранятся в этом телефоне, в этом браузере.</div>
+<div class="hint" style="order:9;text-align:center">Данные хранятся в этом телефоне, в этом браузере.</div>
+<nav class="tabs">
+  <button id="nt_today" class="on" onclick="showTab('today')"><span>📅</span>Сегодня</button>
+  <button id="nt_month" onclick="showTab('month')"><span>📊</span>Месяц</button>
+  <button id="nt_more" onclick="showTab('more')"><span>⚙️</span>Ещё</button>
+</nav>
 
 <script>
 const KEY='workLog.v2';
-let db={days:{},pay:[],set:{work:9,duty:9,short:6,rate:0}};
+let db={days:{},pay:[],sales:[],set:{work:9,duty:9,short:6,rate:0}};
 function hoursFor(s){return s==='rest'?0:(Number(db.set[s])||0);}
 try{
   const s=localStorage.getItem(KEY)||localStorage.getItem('workLog.v1');
   if(s){
     const o=JSON.parse(s);
-    db.pay=o.pay||[];db.set=Object.assign(db.set,o.set||{});
+    db.pay=o.pay||[];db.sales=o.sales||[];db.set=Object.assign(db.set,o.set||{});
     Object.keys(o.days||{}).forEach(k=>{const v=o.days[k];db.days[k]=typeof v==='string'?{s:v,h:hoursFor(v)}:v;});
   }
 }catch(e){}
@@ -175,7 +194,7 @@ function applyTheme(t){document.documentElement.setAttribute('data-theme',t);}
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme')||(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');const n=c==='dark'?'light':'dark';applyTheme(n);try{localStorage.setItem('theme.v1',n);}catch(e){}}
 try{const t=localStorage.getItem('theme.v1');if(t)applyTheme(t);}catch(e){}
 function makeBackup(){
-  const t=JSON.stringify({v:2,days:db.days,pay:db.pay,set:db.set});
+  const t=JSON.stringify({v:2,days:db.days,pay:db.pay,sales:db.sales,set:db.set});
   $('bk').value=t;
   let ok=false;
   try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t);ok=true;}}catch(e){}
@@ -185,18 +204,55 @@ function loadBackup(){
   let o;
   try{o=JSON.parse($('bk').value.trim());}catch(e){$('bkmsg').textContent='Не получилось прочитать. Вставь копию целиком.';return;}
   if(!o||typeof o.days!=='object'){$('bkmsg').textContent='Это не копия графика.';return;}
-  let nd=0,np=0;
+  let nd=0,np=0,ns=0;
   Object.keys(o.days).forEach(k=>{const x=o.days[k];if(x&&typeof x==='object'&&N[x.s]){db.days[k]={s:x.s,h:Number(x.h)||0};nd++;}});
   (o.pay||[]).forEach(p=>{
     if(!p||!p.d||!(Number(p.a)>0))return;
     const m=p.m||String(p.d).slice(0,7),a=Number(p.a);
     if(!db.pay.some(q=>q.d===p.d&&(q.m||q.d.slice(0,7))===m&&q.a===a)){db.pay.push({d:p.d,m:m,a:a});np++;}
   });
+  (o.sales||[]).forEach(x=>{if(!x||!x.id||!x.d||!(Number(x.s)>0))return;if(!db.sales.some(y=>y.id===x.id)){db.sales.push({id:x.id,d:x.d,m:x.m||String(x.d).slice(0,7),name:String(x.name||'Продажа'),q:Number(x.q)||1,s:Number(x.s),c:Number(x.c)||0});ns++;}});
   if(o.set&&typeof o.set==='object'){['work','duty','short','rate'].forEach(k=>{if(o.set[k]!==undefined)db.set[k]=Number(o.set[k])||0;});}
   save();
   ['work','duty','short'].forEach(k=>{$('set_'+k).value=db.set[k];});$('set_rate').value=db.set.rate||'';
   render();
-  $('bkmsg').textContent='Загружено: дней '+nd+', выплат добавлено '+np+' ✓';
+  $('bkmsg').textContent='Загружено: дней '+nd+', выплат '+np+', продаж '+ns+' ✓';
+}
+const esc=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+function addSale(){
+  const name=$('sl_name').value.trim()||'Продажа';
+  const q=num($('sl_q').value)||1,s=num($('sl_s').value),c=num($('sl_c').value);
+  if(!s){$('slmsg').textContent='Впиши, на какую сумму продал.';return;}
+  db.sales.push({id:Date.now(),d:$('date').value,m:vm,name:name,q:q,s:s,c:c});
+  ['sl_name','sl_q','sl_s','sl_c'].forEach(i=>{$(i).value='';});
+  $('slmsg').textContent='Записано ✓';save();render();
+}
+function delSale(id){db.sales=db.sales.filter(x=>x.id!==id);save();render();}
+function renderSales(){
+  const L=db.sales.filter(x=>(x.m||x.d.slice(0,7))===vm).sort((a,b)=>a.d<b.d?-1:1);
+  let q=0,s=0,c=0;L.forEach(x=>{q+=x.q;s+=x.s;c+=x.c;});
+  $('slmo').textContent=new Date(vm+'-01T00:00:00').toLocaleDateString('ru-RU',{month:'long',year:'numeric'});
+  $('sl_grid').innerHTML='<div><small>Продаж, раз</small>'+(Math.round(q*10)/10)+'</div><div><small>Продал на сумму</small>'+fmt(s)+'</div><div><small>Заработал с продаж</small>'+fmt(s-c)+'</div><div><small>Закупка</small>'+fmt(c)+'</div>';
+  $('sl_list').innerHTML=L.length?L.map(x=>'<div class="li"><span>'+x.d.slice(8)+'.'+x.d.slice(5,7)+' продал <b>'+fmt(x.s)+'</b></span><span>+'+fmt(x.s-x.c)+'<button class="x" onclick="delSale('+x.id+')">✕</button></span></div>').join(''):'<div class="hint">Пока нет продаж</div>';
+}
+function showTab(t){document.body.setAttribute('data-tab',t);['today','month','more'].forEach(k=>{$('nt_'+k).classList.toggle('on',k===t);});window.scrollTo(0,0);}
+function monthRate(m){let hrs=0,total=0;Object.keys(db.days).forEach(k=>{if(k.startsWith(m)){const x=db.days[k];if(x.s!=='rest')hrs+=x.h;}});db.pay.forEach(p=>{if((p.m||p.d.slice(0,7))===m)total+=p.a;});return db.set.rate>0?db.set.rate:(hrs?total/hrs:0);}
+function renderDay(){
+  const d=$('date').value||todayStr(),x=db.days[d];
+  const nm=new Date(d+'T00:00:00').toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+  $('dayhead').textContent=(d===todayStr()?'Сегодня · ':'')+nm;
+  const h=x?x.h:0,rate=monthRate(d.slice(0,7));
+  $('daybig').innerHTML=x?'<span class="tag" style="background:'+C[x.s]+';font-size:15px;padding:5px 14px">'+N[x.s]+'</span>':'<span class="hint">День не отмечен. Нажми кнопку ниже.</span>';
+  $('daygrid').innerHTML='<div><small>Часов</small>'+(Math.round(h*10)/10)+'</div><div><small>Ставка за час</small>'+fmt(rate)+'</div><div><small>Заработал за день</small>'+fmt(h*rate)+'</div>';
+}
+function payOf(m){let t=0;db.pay.forEach(p=>{if((p.m||p.d.slice(0,7))===m)t+=p.a;});return t;}
+function renderCmp(){
+  const p=vm.split('-').map(Number),pd=new Date(p[0],p[1]-2,1),pm=pd.getFullYear()+'-'+pad(pd.getMonth()+1);
+  const cur=payOf(vm),prev=payOf(pm),nm=pd.toLocaleDateString('ru-RU',{month:'long'}),el=$('cmp');
+  if(!prev){el.style.color='var(--mu)';el.textContent='Зарплата за прошлый месяц ('+nm+') не записана, сравнивать не с чем.';return;}
+  const pct=Math.round((cur-prev)/prev*100),up=cur>=prev;
+  el.style.color=up?'#16a34a':'#dc2626';
+  el.textContent=(up?'▲ ':'▼ ')+Math.abs(pct)+'% к прошлому месяцу ('+nm+'): было '+fmt(prev)+', стало '+fmt(cur);
 }
 function mv(n){const p=vm.split('-').map(Number);const d=new Date(p[0],p[1]-1+n,1);vm=d.getFullYear()+'-'+pad(d.getMonth()+1);render();}
 
@@ -205,7 +261,7 @@ $('hrs').addEventListener('change',()=>{const d=$('date').value,x=db.days[d];if(
 ['work','duty','short'].forEach(k=>$('set_'+k).addEventListener('change',()=>{db.set[k]=num($('set_'+k).value);save();}));
 $('set_rate').addEventListener('change',()=>{db.set.rate=num($('set_rate').value);save();render();});
 
-function render(){
+function render(){renderDay();renderCmp();
   const d=$('date').value||todayStr(),cur=db.days[d];
   $('cur').textContent=cur?N[cur.s]:'не отмечено';
   ['work','rest','duty','short'].forEach(k=>$('b_'+k).classList.toggle('on',!!cur&&cur.s===k));
@@ -245,6 +301,7 @@ $('date').value=todayStr();
 ['work','duty','short'].forEach(k=>$('set_'+k).value=db.set[k]);
 $('set_rate').value=db.set.rate||'';
 render();
+showTab('today');
 </script>
 </body>
 </html>
